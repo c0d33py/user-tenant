@@ -1,0 +1,52 @@
+{% include 'user/base.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col mt-5">
+            {% if org_query %}
+            <h1 class="card-title">Orgnizations</h1>
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ org_query.name}}</h5>
+                        <small>{{ org_query.created_by}}</small>
+                    </div>
+                    <hr>
+                    <div class="card bg-primary text-white rounded">
+                        <div class="card-body">
+                            <p class="mb-1">Some placeholder content in a paragraph.</p>
+                            <small>And some small print.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Projects</h5>
+                        <a href="{% url 'client_register' org_id=org_query.id %}" class="btn btn-warning btn-sm">New</a>
+                    </div>
+                    <hr>
+                    <div class="list-group">
+                        {% for i in org_query.client_set.all %}
+                        <a href="/r/{{i.slug}}" class="list-group-item list-group-item-action">{{i.name}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="text-center">
+                <h1 class="card-title">Orgnizations</h1>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk
+                    of
+                    the
+                    card's
+                    content.</p>
+                <a href="{% url 'add_org' %}" class="btn btn-primary">Register New Orgnization</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
