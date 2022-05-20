@@ -30,12 +30,3 @@ fqdn = provision_tenant("Name", "schema", "admin@mytenant.com", True)
 ## Todo ##
 
 1. Authenticate users by username
-2. User custom method.
-3. Need to define custom middleware for checking the tenancy permission of requested user
-4. Check domain.tenant is == request.user
-
- ```python 
- # Test Done by (Tenant privet app didn't appear in admin site)
- # Tenant permission are not working with this command 
-python manage.py create_tenant
-``` 
