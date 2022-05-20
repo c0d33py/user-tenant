@@ -1,5 +1,9 @@
 # Create Public Tenant #
 #### 1. Creating Public Tenant (The main schema of your project)
+before creating initial tenant
+```python
+python manage.py migrate_schemas --shared
+```
 
 tenant_users has method for this, but it doesn't give any access for admin user of public tenant. I recommend read `create_public_tenant`'s inside.
 
@@ -29,3 +33,8 @@ fqdn = provision_tenant("Name", "schema", "admin@mytenant.com", True)
 2. User custom method.
 3. Need to define custom middleware for checking the tenancy permission of requested user
 4. Check domain.tenant is == request.user
+
+ ```python 
+ # Test Done by (Tenant privet app didn't appear in admin site)
+python manage.py create_tenant
+``` 

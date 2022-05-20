@@ -19,7 +19,7 @@ def add_location(request):
         form = LocationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/')
+            return redirect('add-inventory')
     else:
         form = LocationForm()
 

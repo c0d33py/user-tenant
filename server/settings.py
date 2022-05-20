@@ -32,7 +32,6 @@ ALLOWED_HOSTS = ['*']
 SHARED_APPS = (
     # Django Apps
     'django_tenants',
-    'account',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,19 +44,16 @@ SHARED_APPS = (
     'tenant_users.tenants',
     'django_extensions',
     'crispy_forms',
-
     # Project Apps
-    'inventory',
-
+    'account',
 )
 
 TENANT_APPS = (
     # Django Apps
     'django.contrib.auth',  # Defined in both shared apps and tenant apps
     'django.contrib.contenttypes',  # Defined in both shared apps and tenant apps
-    'django.contrib.staticfiles',  # Defined in both shared apps and tenant apps
-    # Multi Tenancy Apps
     'tenant_users.permissions',  # Defined in both shared apps and tenant apps
+    # Multi Tenancy Apps
     # Project Apps
     'inventory',
 )
@@ -66,8 +62,8 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 
 TENANT_MODEL = 'account.Client'
 TENANT_DOMAIN_MODEL = 'account.Domain'
-TENANT_USERS_DOMAIN = 'localhost'
-SESSION_COOKIE_DOMAIN = '.localhost'
+TENANT_USERS_DOMAIN = 'example.com'
+# SESSION_COOKIE_DOMAIN = '.localhost'
 # TENANT_SUBFOLDER_PREFIX = 'r'
 
 MIDDLEWARE = [
@@ -166,9 +162,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
 
 AUTH_USER_MODEL = 'account.User'
-# LOGIN_REDIRECT_URL =
-# LOGIN_URL =
-# LOGOUT_REDIRECT_URL =
 PASSWORD_RESET_TIMEOUT = 86400
 
 AUTHENTICATION_BACKENDS = (
