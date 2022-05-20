@@ -30,7 +30,6 @@ def create_public_tenant(domain_url, owner_email, **owner_extra):
         email=owner_email,
         is_active=True,
         **owner_extra,
-
     )
     profile.set_unusable_password()
     profile.save()
