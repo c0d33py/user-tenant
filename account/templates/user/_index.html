@@ -28,7 +28,7 @@
                     <hr>
                     <div class="list-group">
                         {% for i in org_query.client_set.all %}
-                        <a href="{{i.slug}}" class="list-group-item list-group-item-action">{{i.name}}</a>
+                        <a href="/r/{{i.slug}}" class="list-group-item list-group-item-action">{{i.name}}</a>
                         {% endfor %}
                     </div>
                 </div>

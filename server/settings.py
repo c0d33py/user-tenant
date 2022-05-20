@@ -52,8 +52,8 @@ TENANT_APPS = (
     # Django Apps
     'django.contrib.auth',  # Defined in both shared apps and tenant apps
     'django.contrib.contenttypes',  # Defined in both shared apps and tenant apps
-    'tenant_users.permissions',  # Defined in both shared apps and tenant apps
     # Multi Tenancy Apps
+    'tenant_users.permissions',  # Defined in both shared apps and tenant apps
     # Project Apps
     'inventory',
 )
@@ -63,12 +63,16 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 TENANT_MODEL = 'account.Client'
 TENANT_DOMAIN_MODEL = 'account.Domain'
 TENANT_USERS_DOMAIN = 'example.com'
+TENANT_SUBFOLDER_PREFIX = 'r'
 # SESSION_COOKIE_DOMAIN = '.localhost'
-# TENANT_SUBFOLDER_PREFIX = 'r'
+
+ROOT_URLCONF = 'server.urls_tenants'
+PUBLIC_SCHEMA_URLCONF = 'server.urls_public'
 
 MIDDLEWARE = [
-    'django_tenants.middleware.main.TenantMainMiddleware',
+    # 'django_tenants.middleware.main.TenantMainMiddleware',
     # 'django_tenants.middleware.TenantSubfolderMiddleware',
+    'server.middleware.TenantSubfolderMiddleware',
     # 'server.middleware.TenantInactiveMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,7 +84,7 @@ MIDDLEWARE = [
 ]
 
 
-ROOT_URLCONF = 'server.urls'
+# ROOT_URLCONF = 'server.urls'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 TEMPLATES = [
     {
@@ -100,14 +104,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'server.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'tenant_user_new_ver',
+        'NAME': 'tenant_user',
         'USER': 'c0d3',
         'PASSWORD': 'Anon@ha4er',
         'HOST': 'localhost',
@@ -118,7 +121,6 @@ DATABASES = {
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
 )
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

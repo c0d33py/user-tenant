@@ -11,3 +11,4 @@ Markdown==3.3.6
 psycopg2-binary==2.9.3
 sqlparse==0.4.2
 pylint==2.13.9
+autopep8==1.6.0

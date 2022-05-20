@@ -36,5 +36,6 @@ fqdn = provision_tenant("Name", "schema", "admin@mytenant.com", True)
 
  ```python 
  # Test Done by (Tenant privet app didn't appear in admin site)
+ # Tenant permission are not working with this command 
 python manage.py create_tenant
 ``` 
