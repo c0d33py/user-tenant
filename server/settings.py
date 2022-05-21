@@ -25,10 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-+wje&f9i^p8e#223@b#)3a2ersul)5vl8dbtdq1p0e7m61+28a'
 
 DEBUG = True
-
 ALLOWED_HOSTS = ['*']
-# Application definition
 
+# The “sites” framework
+# https://docs.djangoproject.com/en/4.0/ref/contrib/sites/
+
+SITE_ID = 1
+
+# Application definition
 SHARED_APPS = (
     # Django Apps
     'django_tenants',
@@ -46,6 +50,7 @@ SHARED_APPS = (
     'crispy_forms',
     # Project Apps
     'account',
+    'membership',
 )
 
 TENANT_APPS = (
@@ -55,13 +60,13 @@ TENANT_APPS = (
     # Multi Tenancy Apps
     'tenant_users.permissions',  # Defined in both shared apps and tenant apps
     # Project Apps
-    'inventory',
+    'blog',
 )
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
-TENANT_MODEL = 'account.Client'
-TENANT_DOMAIN_MODEL = 'account.Domain'
+TENANT_MODEL = 'membership.Client'
+TENANT_DOMAIN_MODEL = 'membership.Domain'
 TENANT_USERS_DOMAIN = 'example.com'
 TENANT_SUBFOLDER_PREFIX = 'r'
 # SESSION_COOKIE_DOMAIN = '.localhost'
@@ -111,7 +116,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
         'NAME': 'tenant_user',
-        'USER': 'c0d3',
+        'USER': 'anonuser',
         'PASSWORD': 'Anon@ha4er',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -144,12 +149,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
+LANGUAGE_CODE = 'en-us'
 
-LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
-
-TIME_ZONE = 'Europe/Istanbul'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
+
+USE_L10N = True
 
 USE_TZ = True
 
@@ -170,12 +176,7 @@ AUTHENTICATION_BACKENDS = (
     'tenant_users.permissions.backend.UserBackend',
 )
 
-
-# The “sites” framework
-# https://docs.djangoproject.com/en/4.0/ref/contrib/sites/
-
-SITE_ID = 1
-
+# Login function
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'

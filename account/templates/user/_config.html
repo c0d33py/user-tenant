@@ -1,0 +1,55 @@
+{% include 'user/base.html' %}
+{% load crispy_forms_tags %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col mt-5">
+            <h3>Tenants</h3>
+            <div class="row">
+                <div class="col mt-3">
+                    <ul class="list-group" id="tenant-group" data-id="{{tenant.id}}">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>All members in your VNR</strong>
+                            {% for tenant in user_tenant %}
+                            <span class="badge bg-primary rounded-pill">{{tenant.user_set.all.count}}</span>
+                            {% endfor %}
+                        </li>
+                    </ul>
+                    <div class="list-group mt-3">
+                        {% for tenant in user_tenant %}
+                        {% for i in tenant.user_set.all %}
+                        <a href="#" class="">{{i}}</a>
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col mt-3">
+                    <p>User list.</p>
+                    <div class="list-group">
+                        {% for user in users_query %}
+                        <a href="#" class="list-group-item list-group-item-action">{{user}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col mt-3">
+                    <p>User list.</p>
+                    <div class="list-group">
+                        {% for user in members %}
+                        <a href="#" class="list-group-item list-group-item-action">{{user}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col mt-3">
+                    <p>Your active tenants list.</p>
+                    <form action="." method="post">{% csrf_token %}
+                        {{ form | crispy }}
+                        <button type="submit" class="btn btn-primary mt-3">submit</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

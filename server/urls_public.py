@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
-
+from .views import *
 
 urlpatterns = [
-    path('', include('account.urls')),
-    path('inventory/', include('inventory.urls')),
+    path('', index, name='home_page'),
+    path('account/', include('account.urls')),
+    path('member/', include('membership.urls')),
     path('admin/', admin.site.urls),
 ]

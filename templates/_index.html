@@ -1,0 +1,13 @@
+{% include 'user/base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="list-group">
+                <a href="{% url 'add_org' %}" class="list-group-item list-group-item-action">Orgnization</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

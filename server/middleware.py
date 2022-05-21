@@ -51,8 +51,8 @@ class TenantSubfolderMiddleware(TenantMainMiddleware):
         if not request.path.startswith(subfolder_prefix_path):
             try:
                 tenant = tenant_model.objects.get(schema_name=get_public_schema_name())
-                if request.path == '/inventory/':
-                    raise self.TENANT_NOT_FOUND_EXCEPTION()
+                # if request.path == '/inventory/location':
+                #     raise self.TENANT_NOT_FOUND_EXCEPTION()
                 # print(tenant)
             except tenant_model.DoesNotExist:
                 raise self.TENANT_NOT_FOUND_EXCEPTION("Unable to find public tenant")
