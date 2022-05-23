@@ -5,9 +5,83 @@
     <div class="row">
         <div class="col-md-4">
             <div class="list-group">
-                <a href="{% url 'add_org' %}" class="list-group-item list-group-item-action">Orgnization</a>
+                <a href="{% url 'add_org' %}" class="btn-link">Orgnization</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="list-group">
+                {% for rq in request_list %}
+                <li class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div>
+                            <h6 class="mt-1">{{ rq.sender }}</h6>
+                            <small>{{ rq.message }}</small>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm"
+                            onclick="acceptFriendRequest('{{ user.id }}')">Accept</button>
+                        <button type="button" class="btn btn-danger btn-sm"
+                            onclick="declineFriendRequest('{{ user.id }}')">Decline</button>
+                    </div>
+                </li>
+
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+{% block extrascripts %}
+<script type="text/javascript">
+
+    function acceptFriendRequest(friend_request_id) {
+        var url = "{% url 'friend-request-accept' friend_request_id=53252623623632623 %}".replace("53252623623632623", friend_request_id)
+        $.ajax({
+            type: 'GET',
+            dataType: "json",
+            url: url,
+            timeout: 5000,
+            success: function (data) {
+                console.log("SUCCESS", data)
+                if (data['response'] == "Friend request accepted.") {
+                    // ui is updated
+                }
+                else if (data['response'] != null) {
+                    alert(data['response'])
+                }
+            },
+            error: function (data) {
+                console.error("ERROR...", data)
+                alert("Something went wrong.")
+            },
+            complete: function (data) {
+            }
+        });
+    }
+
+    function declineFriendRequest(friend_request_id) {
+        var url = "{% url 'friend-request-decline' friend_request_id=53252623623632623 %}".replace("53252623623632623", friend_request_id)
+        $.ajax({
+            type: 'GET',
+            dataType: "json",
+            url: url,
+            timeout: 5000,
+            success: function (data) {
+                console.log("SUCCESS", data)
+                if (data['response'] == "Friend request declined.") {
+                    // ui is updated
+                }
+                else if (data['response'] != null) {
+                    alert(data['response'])
+                }
+            },
+            error: function (data) {
+                console.error("ERROR...", data)
+                alert("Something went wrong.")
+            },
+            complete: function (data) {
+
+            }
+        });
+    }
+</script>
+{% endblock extrascripts %}

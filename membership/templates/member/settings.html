@@ -5,7 +5,8 @@
 <div class="container-fluid pb-3 mt-5">
     <div class="row align-items-md-stretch">
         <div class="col-md-4">
-            <div class="h-100 p-5 bg-light border rounded-3">
+            <div class="h-100 p-5 bg-light border rounded-3" id="client-schema-name"
+                data-schema="{{ object.schema_name }}">
                 <h2>{{ object.name }} profile</h2>
                 <small>{{ object.organization }}</small>
                 <small class="opacity-50 text-nowrap">{{ object.created }}</small>
@@ -14,7 +15,13 @@
                 <small class="opacity-50 text-nowrap">Manager: </small><strong>{{object.manager}}</strong><br>
                 <small class="opacity-50 text-nowrap">Total members:
                 </small><strong>{{object.member_count}}</strong><br>
-                <small class="opacity-50 text-nowrap">Members: </small><strong>{{object.member}}</strong><br>
+                {% for m in object.active_requests %}
+                <small>Pending request:</small> <strong>{{m}}</strong><br>
+                {% endfor %}
+                <small class="opacity-50 text-nowrap">Members: </small><br>
+                {% for m in object.members.all %}
+                <strong>{{ m }}</strong><br>
+                {% endfor %}
             </div>
         </div>
         <div class="col-md-6">
@@ -41,7 +48,7 @@
                             <h6 class="mt-1">{{ user }}</h6>
                         </div>
                         <button type="button" class="btn btn-primary btn-sm" id="invite-btn"
-                            data-invite-id="{{ user.id }}">Invite</button>
+                            onclick="sendFriendRequest('{{ user.id }}')">Invite</button>
                     </div>
                 </li>
                 {% endfor %}
@@ -53,9 +60,39 @@
 {% endblock %}
 
 {% block extrascripts %}
-<script>
-    $('#invite-btn').click(function () {
-        $(this).fadeOut(1000)
-    })
+<script type="text/javascript">
+    var schema_name = $('#client-schema-name').attr('data-schema')
+    function sendFriendRequest(id) {
+        payload = {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "receiver_user_id": id,
+            "schema_name": schema_name,
+        }
+        $.ajax({
+            type: 'POST',
+            dataType: "json",
+            url: "{% url 'send_friend_request' %}",
+            timeout: 5000,
+            data: payload,
+            success: function (data) {
+                console.log("SUCCESS", data)
+                if (data['response'] == "Friend request sent.") {
+                    // ui is updated
+                }
+                else if (data['response'] != null) {
+                    alert(data['response'])
+                }
+            },
+            error: function (data) {
+                console.error("ERROR...", data)
+                alert("Something went wrong.")
+            },
+            complete: function (data) {
+                $('#invite-btn').click(function () {
+                    $(this).fadeOut(1000)
+                });
+            }
+        });
+    }
 </script>
 {% endblock extrascripts %}

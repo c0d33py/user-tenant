@@ -1,4 +1,5 @@
 import json
+from django.dispatch import receiver
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -44,6 +45,10 @@ def send_friend_request(request, *args, **kwargs):
     payload = {}
     if request.method == "POST" and user.is_authenticated:
         user_id = request.POST.get("receiver_user_id")
+        schema_name = request.POST.get("schema_name")
+        # print(schema_name)
+        client = Client.objects.get(schema_name=schema_name)
+        print(client)
         if user_id:
             receiver = User.objects.get(pk=user_id)
             try:
@@ -53,6 +58,9 @@ def send_friend_request(request, *args, **kwargs):
                         if request.is_active:
                             raise Exception("You already sent them a friend request.")
                     friend_request = MemberRequest(sender=user, receiver=receiver)
+                    content = f'{user} has been invite you for VNR services at {client.slug}'
+                    friend_request.client = client
+                    friend_request.message = content
                     friend_request.save()
                     payload['response'] = "Friend request sent."
                 except Exception as e:
@@ -77,7 +85,7 @@ def accept_friend_request(request, *args, **kwargs):
     if request.method == "GET" and user.is_authenticated:
         friend_request_id = kwargs.get("friend_request_id")
         if friend_request_id:
-            friend_request = MemberRequest.objects.get(pk=friend_request_id)
+            friend_request = MemberRequest.objects.get(receiver=friend_request_id)
             # confirm that is the correct request
             if friend_request.receiver == user:
                 if friend_request:
@@ -137,32 +145,4 @@ def decline_friend_request(request, *args, **kwargs):
             payload['response'] = "Unable to decline that friend request."
     else:
         payload['response'] = "You must be authenticated to decline a friend request."
-    return HttpResponse(json.dumps(payload), content_type="application/json")
-
-
-def cancel_friend_request(request, *args, **kwargs):
-    user = request.user
-    payload = {}
-    if request.method == "POST" and user.is_authenticated:
-        user_id = request.POST.get("receiver_user_id")
-        if user_id:
-            receiver = User.objects.get(pk=user_id)
-            try:
-                friend_requests = MemberRequest.objects.filter(sender=user, receiver=receiver, is_active=True)
-            except MemberRequest.DoesNotExist:
-                payload['response'] = "Nothing to cancel. Friend request does not exist."
-
-            # There should only ever be one active friend request at any given time. Cancel them all just in case.
-            if len(friend_requests) > 1:
-                for request in friend_requests:
-                    request.cancel()
-                payload['response'] = "Friend request cancelled."
-            else:
-                # Cancelling the founded request
-                friend_requests.first().cancel()
-                payload['response'] = "Friend request cancelled."
-        else:
-            payload['response'] = "Unable to cancel that friend request."
-    else:
-        payload['response'] = "You must be authenticated to cancel a friend request."
     return HttpResponse(json.dumps(payload), content_type="application/json")

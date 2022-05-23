@@ -1,7 +1,7 @@
 
-from multiprocessing import context, managers
+import json
 from django.contrib.auth.decorators import login_required
-from django.dispatch import receiver
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from membership.forms.organization import OrganizationForm, TenantForm, MembersForm
@@ -9,7 +9,31 @@ from membership.models.organization import Organization, Client
 from membership.models.member_request import MemberRequest
 from membership.tasks import provision_tenant
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
+
+
+def fixtures_data_load(request):
+    f = open('fixtures/groups.json')
+    json_string = f.read()
+    f.close()
+
+    # Convert json string to python object
+    data = json.loads(json_string)
+    # print(data)
+    # Create model instances for each item
+    items = []
+    for item in data:
+        items.append(item)
+        print(items)
+        # pass
+        # create model instances...
+        # item = YourModel(*item)
+        # YourModel.objects.bulk_create(items)
+
+        return JsonResponse({'succes': True}, status=200)
+
+    return JsonResponse({'succes': False, 'errors': []}, status=400)
 
 
 @login_required
@@ -21,7 +45,7 @@ def settings(request, slug):
     # exiting member invite request list
     account = User.objects.get(pk=current_user.id)
     if account == current_user:
-        active_requests = MemberRequest.objects.filter(receiver=obj.owner).filter(receiver=obj.manager).filter(is_active=True)
+        active_requests = MemberRequest.objects.filter(receiver=current_user).filter(is_active=True)
 
     # Tenant update Form TODO
     if request.method == 'POST':
@@ -34,7 +58,7 @@ def settings(request, slug):
         'object': obj,
         'form': form,
         'global_user': global_user,
-        'active_requests': active_requests
+        'active_requests': active_requests,
     }
 
     return render(request, 'member/settings.html', context)

@@ -32,7 +32,7 @@ class Client(TenantBase):
     auto_drop_schema = True
 
     class Meta:
-        # app_label = 'membership'
+        app_label = 'membership'
         verbose_name = _('client')
         verbose_name_plural = _('clients')
 
@@ -46,7 +46,7 @@ class Client(TenantBase):
 
     # member Count
     def member_count(self):
-        self.members.all().count
+        return self.members.all().count()
 
     # add member
     def add_member(self, account):
@@ -72,6 +72,6 @@ class Client(TenantBase):
 class Domain(DomainMixin):
 
     class Meta:
-        # app_label = 'membership'
+        app_label = 'membership'
         verbose_name = _('domain')
         verbose_name_plural = _('domains')
