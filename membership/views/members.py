@@ -39,19 +39,6 @@ def member_list_view(request):
     return render(request, "user/members.html", context)
 
 
-def friend_requests(request):
-    context = {}
-    user = request.user
-    account = User.objects.get(pk=user.id)
-    if account == user:
-        friend_requests = MemberRequest.objects.filter(receiver=account, is_active=True)
-        context['friend_requests'] = friend_requests
-    else:
-        return HttpResponse("You can't view another users friend requets.")
-
-    return render(request, "user/member_request.html", context)
-
-
 def send_friend_request(request, *args, **kwargs):
     user = request.user
     payload = {}

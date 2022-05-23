@@ -1,15 +1,43 @@
 
+from multiprocessing import context, managers
 from django.contrib.auth.decorators import login_required
+from django.dispatch import receiver
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from membership.forms.organization import OrganizationForm, TenantForm
-from membership.models.organization import Organization
+from membership.forms.organization import OrganizationForm, TenantForm, MembersForm
+from membership.models.organization import Organization, Client
+from membership.models.member_request import MemberRequest
 from membership.tasks import provision_tenant
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 @login_required
-def settings(request):
-    return render(request, 'member/settings.html')
+def settings(request, slug):
+    current_user = request.user
+    obj = get_object_or_404(Client, slug=slug)
+    # Global registered active users list
+    global_user = User.objects.filter(is_active=True).exclude(id=obj.owner.id)
+    # exiting member invite request list
+    account = User.objects.get(pk=current_user.id)
+    if account == current_user:
+        active_requests = MemberRequest.objects.filter(receiver=obj.owner).filter(receiver=obj.manager).filter(is_active=True)
+
+    # Tenant update Form TODO
+    if request.method == 'POST':
+        form = MembersForm(request.POST, instance=obj)
+        if form.is_valid():
+            pass
+    else:
+        form = MembersForm(instance=obj)
+    context = {
+        'object': obj,
+        'form': form,
+        'global_user': global_user,
+        'active_requests': active_requests
+    }
+
+    return render(request, 'member/settings.html', context)
 
 
 @login_required

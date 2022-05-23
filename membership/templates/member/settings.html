@@ -1,0 +1,61 @@
+{% include 'user/base.html' %}
+{% load crispy_forms_tags %}
+{% block body %}
+
+<div class="container-fluid pb-3 mt-5">
+    <div class="row align-items-md-stretch">
+        <div class="col-md-4">
+            <div class="h-100 p-5 bg-light border rounded-3">
+                <h2>{{ object.name }} profile</h2>
+                <small>{{ object.organization }}</small>
+                <small class="opacity-50 text-nowrap">{{ object.created }}</small>
+                <p>Or, keep it light and add a border for some added definition to the boundaries of your content.</p>
+                <small class="opacity-50 text-nowrap">Admin: </small><strong>{{object.has_admin}}</strong><br>
+                <small class="opacity-50 text-nowrap">Manager: </small><strong>{{object.manager}}</strong><br>
+                <small class="opacity-50 text-nowrap">Total members:
+                </small><strong>{{object.member_count}}</strong><br>
+                <small class="opacity-50 text-nowrap">Members: </small><strong>{{object.member}}</strong><br>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="h-100 p-5 bg-light border rounded-3">
+                <h2>Add border</h2>
+                <p>Or, keep it light and add a border for some added definition to the boundaries of your content.</p>
+
+                <form action="." method="post">{% csrf_token %}
+                    <div class="form-floating mb-3">
+                        {{ form | crispy }}
+                    </div>
+                </form>
+                <button class="btn btn-outline-primary" type="submit">Example button</button>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="list-group">
+                {% for user in global_user %}
+                <li class="list-group-item list-group-item-action d-flex gap-3 py-3">
+                    <img src="https://github.com/twbs.png" alt="twbs" width="32" height="32"
+                        class="rounded-circle flex-shrink-0">
+                    <div class="d-flex gap-2 w-100 justify-content-between">
+                        <div>
+                            <h6 class="mt-1">{{ user }}</h6>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" id="invite-btn"
+                            data-invite-id="{{ user.id }}">Invite</button>
+                    </div>
+                </li>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrascripts %}
+<script>
+    $('#invite-btn').click(function () {
+        $(this).fadeOut(1000)
+    })
+</script>
+{% endblock extrascripts %}

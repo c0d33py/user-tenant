@@ -116,7 +116,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
         'NAME': 'tenant_user',
-        'USER': 'anonuser',
+        'USER': 'c0d3',
         'PASSWORD': 'Anon@ha4er',
         'HOST': 'localhost',
         'PORT': '5432',

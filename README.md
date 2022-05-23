@@ -30,3 +30,8 @@ fqdn = provision_tenant("Name", "schema", "admin@mytenant.com", True)
 ## Todo ##
 
 1. Authenticate users by username
+2. show tenant members images
+3. Get daily visitors detail of each tenant
+4. owner it'self in members list
+5. if user want to change the tenant ownership. ownership switching take some while.
+5. if user want to delete the tenant after the conformation celery as a service run in backgound and create a demo user without set passwd & that user take the tenant ownership and then request to database for delete the tenant. 
