@@ -5,7 +5,7 @@ from datetime import datetime
 from PIL import Image
 
 from .path import file_path
-from .mixins import CommonMixin, TimestampMixin, ContactInfoMixIn
+from .mixins import CommonMixin, TimestampMixin, ContactInfoMixin
 
 
 User = get_user_model()
@@ -31,7 +31,7 @@ class UserServices(CommonMixin, TimestampMixin):
         return self.name
 
 
-class Profile(ContactInfoMixIn):
+class Profile(ContactInfoMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     birth_date = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -44,7 +44,7 @@ class Profile(ContactInfoMixIn):
 
     image = models.ImageField(
         _('profile image'),
-        default='profile/default-profile.jpg',
+        default='default/default-profile.jpg',
         upload_to=file_path,
         help_text=_(
             'If user is not set the profile image. '

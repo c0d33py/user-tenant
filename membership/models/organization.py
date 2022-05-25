@@ -2,15 +2,21 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django_tenants.models import DomainMixin
+from PIL import Image
 
 from account.user.models import TenantBase
+from account.user.models.mixins import ContactInfoMixin, TimestampMixin
 
 User = get_user_model()
 
 
-class Organization(models.Model):
-    name = models.CharField(max_length=255)
+class Organization(ContactInfoMixin, TimestampMixin):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    name = models.CharField(max_length=255)
+    logo = models.ImageField(
+        upload_to='organization/logo/',
+        default='default/default-log.png',
+    )
 
     class Meta:
         app_label = 'membership'
@@ -19,6 +25,16 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        super(Organization, self).save(*args, **kwargs)
+
+        img = Image.open(self.logo.path)
+
+        if img.height > 300 or img.width > 300:
+            output_size = (300, 300)
+            img.thumbnail(output_size)
+            img.save(self.logo.path)
 
 
 class Client(TenantBase):
@@ -76,3 +92,36 @@ class Domain(DomainMixin):
         app_label = 'membership'
         verbose_name = _('domain')
         verbose_name_plural = _('domains')
+
+
+class ClientProfile(ContactInfoMixin):
+    client = models.OneToOneField(Client, on_delete=models.CASCADE, null=True)
+    logo = models.ImageField(
+        upload_to='client/logo/',
+        default='default/default-log.png',
+    )
+    email = models.EmailField(blank=True)
+    facebook = models.CharField(max_length=255, blank=True)
+    youtube = models.CharField(max_length=255, blank=True)
+    twitter = models.CharField(max_length=255, blank=True)
+    insta = models.CharField(max_length=255, blank=True)
+    tiktok = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        app_label = 'membership'
+        verbose_name = _('clients profile')
+        verbose_name_plural = _('clients profiles')
+
+    def __str__(self):
+        return self.client.name
+
+    def save(self, *args, **kwargs):
+        super(ClientProfile, self).save(*args, **kwargs)
+
+        img = Image.open(self.logo.path)
+
+        if img.height > 300 or img.width > 300:
+            output_size = (300, 300)
+            img.thumbnail(output_size)
+            img.save(self.logo.path)

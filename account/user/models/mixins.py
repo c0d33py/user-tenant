@@ -29,7 +29,7 @@ class CommonMixin(models.Model):
         abstract = True
 
 
-class ContactInfoMixIn(models.Model):
+class ContactInfoMixin(models.Model):
     '''Contact.'''
 
     address_1 = models.CharField(max_length=70, blank=True, verbose_name=_('Address Line 1'))

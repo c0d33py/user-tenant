@@ -2,10 +2,26 @@ from django.contrib import admin
 from django_tenants.admin import TenantAdminMixin
 from django.utils.translation import gettext_lazy as _
 
-from membership.models.organization import Organization, Client, Domain
+from membership.models.organization import Organization, Client, ClientProfile, Domain
 from membership.models.member_request import MemberRequest
 
-admin.site.register(Organization)
+
+@admin.register(Organization)
+class OrgAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_by', 'logo', 'phone', 'city']
+    fieldsets = (
+        (_('Organization'), {'fields': ('created_by', 'name', 'logo',)}),
+        (_('Address'), {'fields': (
+            'phone',
+            'address_1',
+            'address_2',
+            'state',
+            'zip_code',
+            'city',
+            'country',
+            'website',
+        )}),
+    )
 
 
 @admin.register(MemberRequest)
@@ -36,3 +52,30 @@ class ClientAdmin(TenantAdminMixin, admin.ModelAdmin):
         'members',
     )
     inlines = [DomainInline]
+
+
+@admin.register(ClientProfile)
+class ClientProfileAdmin(admin.ModelAdmin):
+    list_display = ['client', 'logo', 'phone', 'email', 'phone', 'city']
+    fieldsets = (
+        (_('Client'), {'fields': ('client', 'logo',)}),
+        (_('Social'), {'fields': (
+            'email',
+            'facebook',
+            'youtube',
+            'twitter',
+            'insta',
+            'tiktok',
+            'description',
+        )}),
+        (_('Address'), {'fields': (
+            'phone',
+            'address_1',
+            'address_2',
+            'state',
+            'zip_code',
+            'city',
+            'country',
+            'website',
+        )}),
+    )
