@@ -5,13 +5,13 @@ from datetime import datetime
 from PIL import Image
 
 from .path import file_path
-from .mixins import ContactInfoMixIn
+from .mixins import ContactInfoMixIn, UserExtraField
 
 
 User = get_user_model()
 
 
-class Profile(ContactInfoMixIn):
+class Profile(UserExtraField, ContactInfoMixIn):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     birth_date = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)

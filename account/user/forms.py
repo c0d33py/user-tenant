@@ -40,7 +40,6 @@ class UserRegistration(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(UserRegistration, self).__init__(*args, **kwargs)
-        self.fields['is_visitor'].disabled = True
         self.fields['email'].required = True
 
     class Meta:
@@ -50,20 +49,8 @@ class UserRegistration(UserCreationForm):
             'email',
             'password1',
             'password2',
-            'user_interest',
-            'user_services',
-            'is_visitor',
-            'is_content_creator',
-            'is_expert',
         ]
-        labels = {
-            'email': 'email*',
-            'user_interest': 'Your Interest*',
-            'user_services': 'Your Services*',
-            'is_visitor': 'Visitor',
-            'is_content_creator': 'Content Creator',
-            'is_expert': 'Expert',
-        }
+        labels = {'email': 'email*', }
 
     def clean(self):
         cleaned_data = super(UserRegistration, self).clean()
@@ -73,8 +60,32 @@ class UserRegistration(UserCreationForm):
         #     self.add_error('username', 'Username must contain at least 6 character.')
 
 
-class UserProfileUpdateForm(UserRegistration):
+# class UserProfileUpdateForm(UserRegistration):
+#     def __init__(self, *args, **kwargs):
+#         super(UserRegistration, self).__init__(*args, **kwargs)
+#         self.fields['is_visitor'].disabled = True
+#         self.fields['email'].required = True
 
-    class Meta:
-        model = User
-        fields = '__all__'
+#     class Meta:
+#         model = User
+#         fields = [
+#             'user_interest',
+#             'user_services',
+#             'is_visitor',
+#             'is_content_creator',
+#             'is_expert',
+#         ]
+#         labels = {
+#             'user_interest': 'Your Interest*',
+#             'user_services': 'Your Services*',
+#             'is_visitor': 'Visitor',
+#             'is_content_creator': 'Content Creator',
+#             'is_expert': 'Expert',
+#         }
+
+#     def clean(self):
+#         cleaned_data = super(UserRegistration, self).clean()
+#         username = cleaned_data.get('username')
+
+        # if len(username) < 6:
+        #     self.add_error('username', 'Username must contain at least 6 character.')

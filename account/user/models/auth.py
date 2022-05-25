@@ -367,7 +367,7 @@ class UserProfileManager(BaseUserManager):
     # in the public schema alongside the TenantBase model
 
 
-class User(AbstractBaseUser, PermissionsMixinFacade, UserExtraField):
+class User(AbstractBaseUser, PermissionsMixinFacade):
     '''
     An authentication-only model that is in the public tenant schema but
     linked from the authorization model (TenantPermissions)
