@@ -27,7 +27,7 @@ def create_public_tenant(domain_url, username, password, **owner_extra):
     # Create public tenant user. This user doesn't go through object manager
     # create_user function because public tenant does not exist yet
     profile = UserModel.objects.create(
-        email=username,
+        username=username,
         is_active=True,
         **owner_extra,
 

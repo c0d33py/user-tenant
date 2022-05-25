@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from django_tenants.models import TenantMixin
 from django_tenants.utils import get_public_schema_name, get_tenant_model
 
+from .mixins import UserExtraField
 from account.permissions.models import (
     PermissionsMixinFacade,
     TenantPermissions,
@@ -65,9 +66,9 @@ def schema_required(func):
 
 
 class TenantBase(TenantMixin):
-    """Contains global data and settings for the tenant model."""
+    '''Contains global data and settings for the tenant model.'''
 
-    slug = models.SlugField(_('Tenant URL Name'), blank=True)
+    slug = models.SlugField(_('slug'), blank=True)
 
     # The owner of the tenant. Only they can delete it. This can be changed,
     # but it can't be blank. There should always be an owner.
@@ -84,7 +85,7 @@ class TenantBase(TenantMixin):
     auto_drop_schema = True
 
     def save(self, *args, **kwargs):
-        """Override saving Tenant object."""
+        '''Override saving Tenant object.'''
         if not self.pk:
             self.created = timezone.now()
         self.modified = timezone.now()
@@ -92,7 +93,7 @@ class TenantBase(TenantMixin):
         super().save(*args, **kwargs)
 
     def delete(self, force_drop=False, *args, **kwargs):
-        """Override deleting of Tenant object."""
+        '''Override deleting of Tenant object.'''
         if force_drop:
             super().delete(force_drop, *args, **kwargs)
         else:
@@ -102,7 +103,7 @@ class TenantBase(TenantMixin):
 
     @schema_required
     def add_user(self, user_obj, is_superuser=False, is_staff=False):
-        """Add user to tenant."""
+        '''Add user to tenant.'''
         # User already is linked here..
         if self.user_set.filter(id=user_obj.id).exists():
             raise ExistsError(
@@ -129,7 +130,7 @@ class TenantBase(TenantMixin):
 
     @schema_required
     def remove_user(self, user_obj):
-        """Remove user from tenant."""
+        '''Remove user from tenant.'''
         # Test that user is already in the tenant
         self.user_set.get(id=user_obj.id)
 
@@ -159,7 +160,7 @@ class TenantBase(TenantMixin):
         )
 
     def delete_tenant(self):
-        """
+        '''
         Mark tenant for deletion.
 
         We don't actually delete the tenant out of the database, but we
@@ -167,7 +168,7 @@ class TenantBase(TenantMixin):
         to reflect their delete datetime and previous owner
         The caller should verify that the user deleting the tenant owns
         the tenant.
-        """
+        '''
         # Prevent public tenant schema from being deleted
         if self.schema_name == get_public_schema_name():
             raise ValueError('Cannot delete public tenant schema')
@@ -260,7 +261,7 @@ class UserProfileManager(BaseUserManager):
             )
 
         if not username:
-            raise ValueError("The given username must be set")
+            raise ValueError('The given username must be set')
 
         # If no password is submitted, just assign a random one to lock down
         # the account a little bit.
@@ -366,8 +367,8 @@ class UserProfileManager(BaseUserManager):
     # in the public schema alongside the TenantBase model
 
 
-class User(AbstractBaseUser, PermissionsMixinFacade):
-    """
+class User(AbstractBaseUser, PermissionsMixinFacade, UserExtraField):
+    '''
     An authentication-only model that is in the public tenant schema but
     linked from the authorization model (TenantPermissions)
     where as to allow for one global profile (public schema) for each user
@@ -375,23 +376,23 @@ class User(AbstractBaseUser, PermissionsMixinFacade):
     To access permissions for a user, the request must come through the
     tenant that permissions are desired for.
     Requires use of the ModelBackend
-    """
+    '''
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
-        _("username"),
+        _('username'),
         max_length=150,
         unique=True,
         help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+            'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
         ),
         validators=[username_validator],
         error_messages={
-            "unique": _("A user with that username already exists."),
+            'unique': _('A user with that username already exists.'),
         },
     )
 
-    email = models.EmailField(_("email address"), blank=True)
+    email = models.EmailField(_('email address'), blank=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
     is_active = models.BooleanField(
@@ -411,7 +412,7 @@ class User(AbstractBaseUser, PermissionsMixinFacade):
         related_name='user_set',
     )
 
-    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     is_active = models.BooleanField(_('active'), default=True)
 
@@ -422,7 +423,7 @@ class User(AbstractBaseUser, PermissionsMixinFacade):
 
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ["email"]
+    REQUIRED_FIELDS = ['email']
 
     class Meta:
         app_label = 'account'
@@ -440,18 +441,18 @@ class User(AbstractBaseUser, PermissionsMixinFacade):
         return self.is_verified
 
     def get_full_name(self):
-        """
+        '''
         Return the first_name plus the last_name, with a space in between.
-        """
+        '''
         full_name = '%s %s' % (self.first_name, self.last_name)
         return full_name.strip()
 
     def get_short_name(self):
-        """Return the short name for the user."""
+        '''Return the short name for the user.'''
         return self.first_name or self.email
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        """Send an email to this user."""
+        '''Send an email to this user.'''
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def delete(self, force_drop=False, *args, **kwargs):

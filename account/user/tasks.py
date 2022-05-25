@@ -13,11 +13,11 @@ from .models import ExistsError, InactiveError
 
 
 def provision_tenant(tenant_name, tenant_slug, org, username, is_staff=True):
-    """Create a tenant with default roles and permissions.
+    '''Create a tenant with default roles and permissions.
 
     Returns:
     The FQDN for the tenant.
-    """
+    '''
     tenant = None
 
     UserModel = get_user_model()

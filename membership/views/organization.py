@@ -92,12 +92,12 @@ def client_register(request, org_id):
         form = TenantForm(request.POST)
 
         if form.is_valid():
-            user_email = request.user.email
+            username = request.user.username
             tenant_name = form.cleaned_data.get('name')
             tenant_slug = tenant_name.lower()
             org = obj
 
-            provision_tenant(tenant_name, tenant_slug, org, user_email, is_staff=False)
+            provision_tenant(tenant_name, tenant_slug, org, username, is_staff=False)
             return redirect('add_org')
     else:
         form = TenantForm()
