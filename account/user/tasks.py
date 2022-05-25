@@ -9,10 +9,10 @@ from django_tenants.utils import (
     schema_context,
 )
 
-from tenant_users.tenants.models import ExistsError, InactiveError
+from .models import ExistsError, InactiveError
 
 
-def provision_tenant(tenant_name, tenant_slug, user_email, is_staff=False):
+def provision_tenant(tenant_name, tenant_slug, org, username, is_staff=True):
     """Create a tenant with default roles and permissions.
 
     Returns:
@@ -23,7 +23,7 @@ def provision_tenant(tenant_name, tenant_slug, user_email, is_staff=False):
     UserModel = get_user_model()
     TenantModel = get_tenant_model()
 
-    user = UserModel.objects.get(email=user_email)
+    user = UserModel.objects.get(username=username)
     if not user.is_active:
         raise InactiveError('Inactive user passed to provision tenant')
 
@@ -50,6 +50,7 @@ def provision_tenant(tenant_name, tenant_slug, user_email, is_staff=False):
         # if any error occurs
         with schema_context(get_public_schema_name()):
             tenant = TenantModel.objects.create(
+                organization=org,
                 name=tenant_name,
                 slug=tenant_slug,
                 schema_name=schema_name,

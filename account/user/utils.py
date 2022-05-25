@@ -6,7 +6,7 @@ from django_tenants.utils import (
     get_tenant_model,
 )
 
-from tenant_users.tenants.models import ExistsError
+from .models import ExistsError
 
 
 def get_current_tenant():
@@ -16,7 +16,7 @@ def get_current_tenant():
     return tenant
 
 
-def create_public_tenant(domain_url, owner_email, **owner_extra):
+def create_public_tenant(domain_url, username, password, **owner_extra):
     UserModel = get_user_model()
     TenantModel = get_tenant_model()
     public_schema_name = get_public_schema_name()
@@ -27,11 +27,12 @@ def create_public_tenant(domain_url, owner_email, **owner_extra):
     # Create public tenant user. This user doesn't go through object manager
     # create_user function because public tenant does not exist yet
     profile = UserModel.objects.create(
-        email=owner_email,
+        email=username,
         is_active=True,
         **owner_extra,
+
     )
-    profile.set_unusable_password()
+    profile.set_password(password)
     profile.save()
 
     # Create public tenant
@@ -49,4 +50,4 @@ def create_public_tenant(domain_url, owner_email, **owner_extra):
     )
 
     # Add system user to public tenant (no permissions)
-    public_tenant.add_user(profile)
+    public_tenant.add_user(profile, is_superuser=True, is_staff=True)

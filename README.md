@@ -6,12 +6,13 @@ python manage.py migrate_schemas --shared
 ```
 
 tenant_users has method for this, but it doesn't give any access for admin user of public tenant. I recommend read `create_public_tenant`'s inside.
+after domain you need to add username
 
 ```python
 # import form custom file
 from server.init_tenant import create_public_tenant
 
-create_public_tenant("localhost", "admin@test.com", "testing123@")
+create_public_tenant("localhost","admin", "admin@test.com", "testing123@")
 ```
 
 #### 2. Creating New Tenant (***peramiters***)

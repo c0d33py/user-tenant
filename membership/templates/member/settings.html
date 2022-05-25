@@ -1,4 +1,4 @@
-{% include 'user/base.html' %}
+{% include 'base.html' %}
 {% load crispy_forms_tags %}
 {% block body %}
 
@@ -15,8 +15,8 @@
                 <small class="opacity-50 text-nowrap">Manager: </small><strong>{{object.manager}}</strong><br>
                 <small class="opacity-50 text-nowrap">Total members:
                 </small><strong>{{object.member_count}}</strong><br>
-                {% for m in object.active_requests %}
-                <small>Pending request:</small> <strong>{{m}}</strong><br>
+                {% for aq in active_requests %}
+                <small>Pending request:</small> <strong>{{aq.receiver}}</strong><br>
                 {% endfor %}
                 <small class="opacity-50 text-nowrap">Members: </small><br>
                 {% for m in object.members.all %}

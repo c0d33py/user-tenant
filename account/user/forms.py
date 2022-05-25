@@ -31,10 +31,12 @@ class UserTenantConfigForm(UserChangeForm):
 class UserRegistration(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super(UserRegistration, self).__init__(*args, **kwargs)
+        self.fields['email'].required = True
 
     class Meta:
         model = User
         fields = [
+            'username',
             'email',
             'password1',
             'password2',

@@ -1,19 +1,21 @@
 import time
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import connection, models
 from django.dispatch import Signal
+from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_tenants.models import TenantMixin
 from django_tenants.utils import get_public_schema_name, get_tenant_model
 
-from tenant_users.permissions.models import (
+from account.permissions.models import (
     PermissionsMixinFacade,
-    UserTenantPermissions,
+    TenantPermissions,
 )
+
 
 # An existing user removed from a tenant
 tenant_user_removed = Signal()
@@ -111,8 +113,8 @@ class TenantBase(TenantMixin):
 
         # User not linked to this tenant, so we need to create
         # tenant permissions
-        UserTenantPermissions.objects.create(
-            profile=user_obj,
+        TenantPermissions.objects.create(
+            user=user_obj,
             is_staff=is_staff,
             is_superuser=is_superuser,
         )
@@ -140,14 +142,14 @@ class TenantBase(TenantMixin):
                 ),
             )
 
-        user_tenant_perms = user_obj.usertenantpermissions
+        user_tenant_perms = user_obj.TenantPermissions
 
         # Remove all current groups from user..
         groups = user_tenant_perms.groups
         groups.clear()
 
         # Unlink from tenant
-        UserTenantPermissions.objects.filter(id=user_tenant_perms.id).delete()
+        TenantPermissions.objects.filter(id=user_tenant_perms.id).delete()
         user_obj.tenants.remove(self)
 
         tenant_user_removed.send(
@@ -208,7 +210,7 @@ class TenantBase(TenantMixin):
         old_owner = self.owner
 
         # Remove current owner superuser status but retain any assigned role(s)
-        old_owner_tenant = old_owner.usertenantpermissions
+        old_owner_tenant = old_owner.TenantPermissions
         old_owner_tenant.is_superuser = False
         old_owner_tenant.save()
 
@@ -221,7 +223,7 @@ class TenantBase(TenantMixin):
         try:
             # Set new user as superuser in this tenant if user already exists
             user = self.user_set.get(id=new_owner.id)
-            user_tenant = user.usertenantpermissions
+            user_tenant = user.TenantPermissions
             user_tenant.is_superuser = True
             user_tenant.save()
         except get_user_model().DoesNotExist:
@@ -237,6 +239,7 @@ class TenantBase(TenantMixin):
 class UserProfileManager(BaseUserManager):
     def _create_user(
         self,
+        username,
         email,
         password,
         is_staff,
@@ -248,6 +251,7 @@ class UserProfileManager(BaseUserManager):
         # inside a tenant. Must create public tenant permissions during user
         # creation. This happens during assign role. This function cannot be
         # used until a public schema already exists
+
         UserModel = get_user_model()
 
         if connection.schema_name != get_public_schema_name():
@@ -255,8 +259,8 @@ class UserProfileManager(BaseUserManager):
                 'Schema must be public for UserProfileManager user creation',
             )
 
-        if not email:
-            raise ValueError('Users must have an email address.')
+        if not username:
+            raise ValueError("The given username must be set")
 
         # If no password is submitted, just assign a random one to lock down
         # the account a little bit.
@@ -265,54 +269,51 @@ class UserProfileManager(BaseUserManager):
 
         email = self.normalize_email(email)
 
-        profile = UserModel.objects.filter(email=email).first()
-        if profile and profile.is_active:
+        user = UserModel.objects.filter(email=email).first()
+        if user and user.is_active:
             raise ExistsError('User already exists!')
 
-        # Profile might exist but not be active. If a profile does exist
+        # user might exist but not be active. If a user does exist
         # all previous history logs will still be associated with the user,
         # but will not be accessible because the user won't be linked to
         # any tenants from the user's previous membership. There are two
         # exceptions to this. 1) The user gets re-invited to a tenant it
         # previously had access to (this is good thing IMO). 2) The public
         # schema if they had previous activity associated would be available
-        if not profile:
-            profile = UserModel()
-
-        profile.email = email
-        profile.is_active = True
-        profile.is_verified = is_verified
-        profile.set_password(password)
-        for attr, value in extra_fields.items():
-            setattr(profile, attr, value)
-        profile.save()
+        if not user:
+            user = UserModel()
+        user.username = username
+        user.email = email
+        user.is_active = True
 
         # Get public tenant tenant and link the user (no perms)
         public_tenant = get_tenant_model().objects.get(
             schema_name=get_public_schema_name(),
         )
-        public_tenant.add_user(profile)
+        public_tenant.add_user(user)
 
         # Public tenant permissions object was created when we assigned a
         # role to the user above, if we are a staff/superuser we set it here
         if is_staff or is_superuser:
-            user_tenant = profile.usertenantpermissions
+            user_tenant = user.tenantpermissions
             user_tenant.is_staff = is_staff
             user_tenant.is_superuser = is_superuser
             user_tenant.save()
 
-        tenant_user_created.send(sender=self.__class__, user=profile)
+        tenant_user_created.send(sender=self.__class__, user=user)
 
-        return profile
+        return user
 
     def create_user(
         self,
+        username,
         email=None,
         password=None,
         is_staff=False,
         **extra_fields,
     ):
         return self._create_user(
+            username,
             email,
             password,
             is_staff,
@@ -321,8 +322,9 @@ class UserProfileManager(BaseUserManager):
             **extra_fields,
         )
 
-    def create_superuser(self, password, email=None, **extra_fields):
+    def create_superuser(self, username, password, email=None, **extra_fields):
         return self._create_user(
+            username,
             email,
             password,
             True,
@@ -359,23 +361,47 @@ class UserProfileManager(BaseUserManager):
 
         tenant_user_deleted.send(sender=self.__class__, user=user_obj)
 
+    # This cant be located in the users app otherwise it would get loaded into
+    # both the public schema and all tenant schemas. We want profiles only
+    # in the public schema alongside the TenantBase model
 
-# This cant be located in the users app otherwise it would get loaded into
-# both the public schema and all tenant schemas. We want profiles only
-# in the public schema alongside the TenantBase model
-class UserProfile(AbstractBaseUser, PermissionsMixinFacade):
+
+class User(AbstractBaseUser, PermissionsMixinFacade):
     """
     An authentication-only model that is in the public tenant schema but
-    linked from the authorization model (UserTenantPermissions)
+    linked from the authorization model (TenantPermissions)
     where as to allow for one global profile (public schema) for each user
     but maintain permissions on a per tenant basis.
     To access permissions for a user, the request must come through the
     tenant that permissions are desired for.
     Requires use of the ModelBackend
     """
+    username_validator = UnicodeUsernameValidator()
 
-    USERNAME_FIELD = 'email'
-    objects = UserProfileManager()
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=True,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[username_validator],
+        error_messages={
+            "unique": _("A user with that username already exists."),
+        },
+    )
+
+    email = models.EmailField(_("email address"), blank=True)
+    first_name = models.CharField(_('first name'), max_length=150, blank=True)
+    last_name = models.CharField(_('last name'), max_length=150, blank=True)
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
 
     tenants = models.ManyToManyField(
         settings.TENANT_MODEL,
@@ -385,22 +411,48 @@ class UserProfile(AbstractBaseUser, PermissionsMixinFacade):
         related_name='user_set',
     )
 
-    email = models.EmailField(
-        _('Email Address'),
-        unique=True,
-        db_index=True,
-    )
+    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
     is_active = models.BooleanField(_('active'), default=True)
 
     # Tracks whether the user's email has been verified
     is_verified = models.BooleanField(_('verified'), default=False)
 
-    class Meta(object):
-        abstract = True
+    objects = UserProfileManager()
+
+    EMAIL_FIELD = 'email'
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ["email"]
+
+    class Meta:
+        app_label = 'account'
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
+
+    def __str__(self):
+        return self.username
+
+    def clean(self):
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
 
     def has_verified_email(self):
         return self.is_verified
+
+    def get_full_name(self):
+        """
+        Return the first_name plus the last_name, with a space in between.
+        """
+        full_name = '%s %s' % (self.first_name, self.last_name)
+        return full_name.strip()
+
+    def get_short_name(self):
+        """Return the short name for the user."""
+        return self.first_name or self.email
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        """Send an email to this user."""
+        send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def delete(self, force_drop=False, *args, **kwargs):
         if force_drop:
@@ -409,13 +461,3 @@ class UserProfile(AbstractBaseUser, PermissionsMixinFacade):
             raise DeleteError(
                 'UserProfile.objects.delete_user() should be used.',
             )
-
-    def __str__(self):
-        return self.email
-
-    def get_short_name(self):
-        return self.email
-
-    def get_full_name(self):
-        """Return string representation."""
-        return str(self)

@@ -2,16 +2,16 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from tenant_users.permissions.models import UserTenantPermissions
-from .forms import UserAdminCreationForm, UserAdminChangeForm
+
+from account.permissions.models import TenantPermissions
 
 User = get_user_model()
 
 
-@admin.register(UserTenantPermissions)
+@admin.register(TenantPermissions)
 class PermAdmin(admin.ModelAdmin):
     fieldsets = (
-        (_('Profile'), {'fields': ('profile',)}),
+        (_('User'), {'fields': ('user',)}),
         (_('Permissions'), {'fields': ('is_staff', 'is_superuser', 'groups', 'user_permissions',)}),
     )
     filter_horizontal = (
@@ -26,8 +26,8 @@ class UserAdmin(BaseUserAdmin):
     list_editable = ('is_active',)
     list_filter = ['is_active']
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name')}),
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
         (_('Permissions'), {'fields': ('is_active',)}),
         (_('Tenants'), {'fields': ('tenants',)}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined',)}),
@@ -35,9 +35,9 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2'),
+            'fields': ('username', 'password1', 'password2'),
         }),
     )
-    search_fields = ['email', 'first_name', 'last_name']
+    search_fields = ['username', 'email', 'first_name', 'last_name']
     ordering = ['-id']
     filter_horizontal = ('tenants',)

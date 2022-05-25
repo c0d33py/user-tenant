@@ -44,12 +44,11 @@ SHARED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Multi Tenancy Apps
-    'tenant_users.permissions',
-    'tenant_users.tenants',
+    'account.permissions',
+    'account.user',
     'django_extensions',
     'crispy_forms',
     # Project Apps
-    'account',
     'membership',
 )
 
@@ -58,7 +57,7 @@ TENANT_APPS = (
     'django.contrib.auth',  # Defined in both shared apps and tenant apps
     'django.contrib.contenttypes',  # Defined in both shared apps and tenant apps
     # Multi Tenancy Apps
-    'tenant_users.permissions',  # Defined in both shared apps and tenant apps
+    'account.permissions',  # Defined in both shared apps and tenant apps
     # Project Apps
     'blog',
 )
@@ -73,6 +72,16 @@ TENANT_SUBFOLDER_PREFIX = 'r'
 
 ROOT_URLCONF = 'server.urls_tenants'
 PUBLIC_SCHEMA_URLCONF = 'server.urls_public'
+
+# Auth
+# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
+
+AUTH_USER_MODEL = 'account.user'
+PASSWORD_RESET_TIMEOUT = 86400
+
+AUTHENTICATION_BACKENDS = (
+    'account.permissions.backend.UserBackend',
+)
 
 MIDDLEWARE = [
     # 'django_tenants.middleware.main.TenantMainMiddleware',
@@ -116,7 +125,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
         'NAME': 'tenant_user',
-        'USER': 'anonuser',
+        'USER': 'c0d3',
         'PASSWORD': 'Anon@ha4er',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -165,17 +174,6 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# Auth
-# https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
-
-AUTH_USER_MODEL = 'account.User'
-PASSWORD_RESET_TIMEOUT = 86400
-
-AUTHENTICATION_BACKENDS = (
-    'tenant_users.permissions.backend.UserBackend',
-)
-
 # Login function
 
 LOGIN_URL = 'login'
@@ -191,9 +189,9 @@ LOGOUT_REDIRECT_URL = '/'
 
 SHELL_PLUS_IMPORTS = [
     # 'from tenant_users.tenants.utils import create_public_tenant',
-    'from tenant_users.tenants.tasks import provision_tenant',
+    'from account.user.tasks import provision_tenant',
     'from server.init_tenant import create_public_tenant',
-    'from account.models import User, Client, Domain',
+    'from account.user.models import User, Client, Domain',
 ]
 
 

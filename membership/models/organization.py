@@ -1,6 +1,6 @@
 from django.db import models
 from django_tenants.models import DomainMixin
-from tenant_users.tenants.models import TenantBase
+from account.user.models import TenantBase
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 

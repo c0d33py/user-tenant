@@ -1,32 +1,31 @@
 
 import json
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.dispatch import receiver
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.http import JsonResponse
+
 from membership.forms.organization import OrganizationForm, TenantForm, MembersForm
 from membership.models.organization import Organization, Client
 from membership.models.member_request import MemberRequest
-from membership.tasks import provision_tenant
-from django.contrib.auth import get_user_model
+from account.user.tasks import provision_tenant
+from django.db.models import Q
 
 User = get_user_model()
 
 
 def fixtures_data_load(request):
-    f = open('fixtures/groups.json')
-    json_string = f.read()
-    f.close()
 
-    # Convert json string to python object
-    data = json.loads(json_string)
-    # print(data)
+    with open('fixtures/groups.json', encoding='utf-8') as data_file:
+        # Convert json string to python object
+        data = json.loads(data_file.read())
+
     # Create model instances for each item
-    items = []
+    # items = []
     for item in data:
-        items.append(item)
-        print(items)
-        # pass
+        pass
         # create model instances...
         # item = YourModel(*item)
         # YourModel.objects.bulk_create(items)
@@ -38,14 +37,18 @@ def fixtures_data_load(request):
 
 @login_required
 def settings(request, slug):
-    current_user = request.user
     obj = get_object_or_404(Client, slug=slug)
+
+    # sent_request = list(
+    #     MemberRequest.objects.filter(Q(receiver=request.user) | Q(sender=request.user))
+    #     .values_list('from_user_id', flat=True))
+
     # Global registered active users list
-    global_user = User.objects.filter(is_active=True).exclude(id=obj.owner.id)
+    # Exclude user if this tenant id alread exits in user model obj
+    global_user = User.objects.filter(is_active=True).exclude(tenants=obj).exclude(id=obj.owner.id)  # .exclude(pk=)
+
     # exiting member invite request list
-    account = User.objects.get(pk=current_user.id)
-    if account == current_user:
-        active_requests = MemberRequest.objects.filter(receiver=current_user).filter(is_active=True)
+    active_requests = MemberRequest.objects.filter(client=obj).filter(is_active=True)
 
     # Tenant update Form TODO
     if request.method == 'POST':
