@@ -73,6 +73,8 @@ TENANT_SUBFOLDER_PREFIX = 'r'
 ROOT_URLCONF = 'server.urls_tenants'
 PUBLIC_SCHEMA_URLCONF = 'server.urls_public'
 
+# FIXTURE_DIRS = BASE_DIR / 'fixtures'
+
 # Auth
 # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
 

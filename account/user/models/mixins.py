@@ -29,40 +29,6 @@ class CommonMixin(models.Model):
         abstract = True
 
 
-class UserInterest(CommonMixin, TimestampMixin):
-    '''User Interest'''
-
-    class Meta:
-        app_label = 'auth'
-
-    def __str__(self):
-        return self.name
-
-
-class UserServices(CommonMixin, TimestampMixin):
-    '''User Services'''
-
-    class Meta:
-        app_label = 'auth'
-
-    def __str__(self):
-        return self.name
-
-
-class UserExtraField(models.Model):
-    '''Exta Field.'''
-
-    language = models.CharField(max_length=100, blank=True)
-    user_services = models.ManyToManyField(UserServices, related_name='services', blank=True)
-    user_interest = models.ManyToManyField(UserInterest, related_name='interest', blank=True)
-    is_visitor = models.BooleanField(default=True)
-    is_content_creator = models.BooleanField(default=False)
-    is_expert = models.BooleanField(default=False)
-
-    class Meta:
-        abstract = True
-
-
 class ContactInfoMixIn(models.Model):
     '''Contact.'''
 

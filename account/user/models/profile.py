@@ -5,16 +5,42 @@ from datetime import datetime
 from PIL import Image
 
 from .path import file_path
-from .mixins import ContactInfoMixIn, UserExtraField
+from .mixins import CommonMixin, TimestampMixin, ContactInfoMixIn
 
 
 User = get_user_model()
 
 
-class Profile(UserExtraField, ContactInfoMixIn):
+class UserInterest(CommonMixin, TimestampMixin):
+    '''User Interest'''
+
+    class Meta:
+        app_label = 'account'
+
+    def __str__(self):
+        return self.name
+
+
+class UserServices(CommonMixin, TimestampMixin):
+    '''User Services'''
+
+    class Meta:
+        app_label = 'account'
+
+    def __str__(self):
+        return self.name
+
+
+class Profile(ContactInfoMixIn):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     birth_date = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
+    language = models.CharField(max_length=100, blank=True)
+    user_services = models.ManyToManyField(UserServices, related_name='services', blank=True)
+    user_interest = models.ManyToManyField(UserInterest, related_name='interest', blank=True)
+    is_visitor = models.BooleanField(default=True)
+    is_content_creator = models.BooleanField(default=False)
+    is_expert = models.BooleanField(default=False)
 
     image = models.ImageField(
         _('profile image'),
