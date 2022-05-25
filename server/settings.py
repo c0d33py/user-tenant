@@ -188,10 +188,9 @@ LOGOUT_REDIRECT_URL = '/'
 # https://github.com/django-extensions/django-extensions/blob/main/docs/shell_plus.rst#additional-imports
 
 SHELL_PLUS_IMPORTS = [
-    # 'from tenant_users.tenants.utils import create_public_tenant',
+    'from account.user.utils import create_public_tenant',
     'from account.user.tasks import provision_tenant',
-    'from server.init_tenant import create_public_tenant',
-    'from account.user.models import User, Client, Domain',
+    'from account.user.models.auth import User',
 ]
 
 

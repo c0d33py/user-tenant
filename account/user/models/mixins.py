@@ -33,7 +33,7 @@ class UserInterest(CommonMixin, TimestampMixin):
     '''User Interest'''
 
     class Meta:
-        app_label = 'account'
+        app_label = 'auth'
 
     def __str__(self):
         return self.name
@@ -43,7 +43,7 @@ class UserServices(CommonMixin, TimestampMixin):
     '''User Services'''
 
     class Meta:
-        app_label = 'account'
+        app_label = 'auth'
 
     def __str__(self):
         return self.name

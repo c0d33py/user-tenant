@@ -11,6 +11,8 @@ User = get_user_model()
 
 @admin.register(TenantPermissions)
 class PermAdmin(admin.ModelAdmin):
+    list_display = ['user', 'is_staff', 'is_superuser']
+    list_filter = ['is_superuser']
     fieldsets = (
         (_('User'), {'fields': ('user',)}),
         (_('Permissions'), {'fields': ('is_staff', 'is_superuser', 'groups', 'user_permissions',)}),
@@ -23,7 +25,7 @@ class PermAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser']
     list_editable = ('is_active',)
     list_filter = ['is_active']
     fieldsets = (

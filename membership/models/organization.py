@@ -1,8 +1,9 @@
 from django.db import models
-from django_tenants.models import DomainMixin
-from account.user.models import TenantBase
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
+from django_tenants.models import DomainMixin
+
+from account.user.models import TenantBase
 
 User = get_user_model()
 

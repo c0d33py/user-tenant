@@ -3,8 +3,8 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
-from .organization import Client
 from .mixin import TimestampMixin
+from .organization import Client
 
 User = get_user_model()
 

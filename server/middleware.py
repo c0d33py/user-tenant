@@ -1,9 +1,6 @@
-# from urllib import request
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import connection
 from django.http import Http404
-from django.shortcuts import redirect, render
 from django.urls import set_urlconf, clear_url_caches
 from django_tenants.middleware import TenantMainMiddleware
 from django_tenants.urlresolvers import get_subfolder_urlconf
@@ -12,7 +9,6 @@ from django_tenants.utils import (
     get_tenant_model,
     get_subfolder_prefix, get_tenant_domain_model,
 )
-from server.settings import ROOT_URLCONF
 
 
 class TenantSubfolderMiddleware(TenantMainMiddleware):

@@ -1,8 +1,8 @@
 import json
-from django.dispatch import receiver
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
+
 from membership.models.organization import Client
 from membership.models.member_request import MemberRequest
 

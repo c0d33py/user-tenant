@@ -1,6 +1,6 @@
-from pyexpat import model
 from django import forms
 from django.utils.translation import gettext_lazy as _
+
 from membership.models.organization import Organization, Client
 
 
