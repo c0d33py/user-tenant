@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 
 class TimestampMixin(models.Model):
@@ -15,14 +14,12 @@ class TimestampMixin(models.Model):
 class CommonMixin(models.Model):
     '''User Commen'''
 
-    name = models.CharField(_('Name'), max_length=100)
+    name = models.CharField(verbose_name='Name', max_length=100)
     is_active = models.BooleanField(
-        _('active'),
+        verbose_name='active',
         default=True,
-        help_text=_(
-            'Designates whether this attr should be treated as active. '
-            'Unselect this instead of deleting object.'
-        ),
+        help_text='Designates whether this attr should be treated as active. '
+        'Unselect this instead of deleting object.',
     )
 
     class Meta:
@@ -32,14 +29,13 @@ class CommonMixin(models.Model):
 class ContactInfoMixin(models.Model):
     '''Contact.'''
 
-    address_1 = models.CharField(max_length=70, blank=True, verbose_name=_('Address Line 1'))
-    address_2 = models.CharField(max_length=70, blank=True, verbose_name=_('Address Line 2'))
-    city = models.CharField(max_length=70, blank=True, verbose_name=_('City'))
-    state = models.CharField(max_length=70, blank=True, verbose_name=_('State/Province'))
-    zip_code = models.CharField(max_length=20, blank=True, verbose_name=_('Zip Code'))
-    country = models.CharField(max_length=70, blank=True, verbose_name=_('Country'))
-    website = models.URLField(blank=True, verbose_name=_('Website'))
-    phone = models.CharField(max_length=30, blank=True,  verbose_name=_('Phone Number'))
+    address_1 = models.CharField(max_length=70, blank=True, verbose_name='Address Line 1')
+    address_2 = models.CharField(max_length=70, blank=True, verbose_name='Address Line 2')
+    city = models.CharField(max_length=70, blank=True, verbose_name='City')
+    state = models.CharField(max_length=70, blank=True, verbose_name='State/Province')
+    zip_code = models.CharField(max_length=20, blank=True, verbose_name='Zip Code')
+    country = models.CharField(max_length=70, blank=True, verbose_name='Country')
+    phone = models.CharField(max_length=30, blank=True, verbose_name='Phone Number')
 
     class Meta:
         abstract = True

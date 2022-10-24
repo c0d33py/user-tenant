@@ -48,17 +48,22 @@ SHARED_APPS = (
     'account.user',
     'django_extensions',
     'crispy_forms',
+    'rest_framework',
     # Project Apps
     'membership',
+    'comment',
+    'library',
+    'blog',
 )
 
 TENANT_APPS = (
     # Django Apps
     'django.contrib.auth',  # Defined in both shared apps and tenant apps
     'django.contrib.contenttypes',  # Defined in both shared apps and tenant apps
-    # Multi Tenancy Apps
     'account.permissions',  # Defined in both shared apps and tenant apps
-    # Project Apps
+    'comment',
+    'library',
+    'core',
     'blog',
 )
 
@@ -68,7 +73,6 @@ TENANT_MODEL = 'membership.Client'
 TENANT_DOMAIN_MODEL = 'membership.Domain'
 TENANT_USERS_DOMAIN = 'example.com'
 TENANT_SUBFOLDER_PREFIX = 'r'
-# SESSION_COOKIE_DOMAIN = '.localhost'
 
 ROOT_URLCONF = 'server.urls_tenants'
 PUBLIC_SCHEMA_URLCONF = 'server.urls_public'
@@ -79,7 +83,7 @@ PUBLIC_SCHEMA_URLCONF = 'server.urls_public'
 # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
 
 AUTH_USER_MODEL = 'account.user'
-PASSWORD_RESET_TIMEOUT = 86400
+PASSWORD_RESET_TIMEOUT = 86400  # 1 day
 
 AUTHENTICATION_BACKENDS = (
     'account.permissions.backend.UserBackend',
@@ -126,7 +130,7 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'tenant_user',
+        'NAME': 'tenant_test-0.1.0',
         'USER': 'c0d3',
         'PASSWORD': 'Anon@ha4er',
         'HOST': 'localhost',
@@ -205,3 +209,27 @@ STATICFILES_DIRS = (
 # Media Files
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# Django REST framework! We'll create a read-write API for accessing information on the users of our project.
+# https://www.django-rest-framework.org/#installation
+REST_FRAMEWORK = {
+    # Use Rest framework date format
+    'DATETIME_FORMAT': "%m-%d-%Y %H:%M:%S",
+    'DATE_FORMAT': "%m-%d-%Y",
+
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler'
+}

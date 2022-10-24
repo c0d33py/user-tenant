@@ -1,21 +1,18 @@
 import time
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.mail import send_mail
 from django.db import connection, models
 from django.dispatch import Signal
-from django.core.mail import send_mail
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 from django_tenants.models import TenantMixin
 from django_tenants.utils import get_public_schema_name, get_tenant_model
 
-from account.permissions.models import (
-    PermissionsMixinFacade,
-    TenantPermissions,
-)
-
+from account.permissions.models import (PermissionsMixinFacade,
+                                        TenantPermissions)
 
 # An existing user removed from a tenant
 tenant_user_removed = Signal()
@@ -67,7 +64,7 @@ def schema_required(func):
 class TenantBase(TenantMixin):
     '''Contains global data and settings for the tenant model.'''
 
-    slug = models.SlugField(_('slug'), blank=True)
+    slug = models.SlugField(verbose_name='slug', blank=True)
 
     # The owner of the tenant. Only they can delete it. This can be changed,
     # but it can't be blank. There should always be an owner.
@@ -75,21 +72,13 @@ class TenantBase(TenantMixin):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    created = models.DateTimeField()
-    modified = models.DateTimeField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     # Schema will be automatically created and synced when it is saved
     auto_create_schema = True
     # Schema will be automatically deleted when related tenant is deleted
     auto_drop_schema = True
-
-    def save(self, *args, **kwargs):
-        '''Override saving Tenant object.'''
-        if not self.pk:
-            self.created = timezone.now()
-        self.modified = timezone.now()
-
-        super().save(*args, **kwargs)
 
     def delete(self, force_drop=False, *args, **kwargs):
         '''Override deleting of Tenant object.'''
@@ -262,6 +251,9 @@ class UserProfileManager(BaseUserManager):
         if not username:
             raise ValueError('The given username must be set')
 
+        if len(username) < 6:
+            raise ValueError('username', 'Username must contain at least 6 character.')
+
         # If no password is submitted, just assign a random one to lock down
         # the account a little bit.
         if not password:
@@ -284,7 +276,7 @@ class UserProfileManager(BaseUserManager):
             user = UserModel()
         user.username = username
         user.email = email
-        user.is_active = True
+        # user.is_active = True
 
         # Get public tenant tenant and link the user (no perms)
         public_tenant = get_tenant_model().objects.get(
@@ -306,14 +298,12 @@ class UserProfileManager(BaseUserManager):
 
     def create_user(
         self,
-        username,
         email=None,
         password=None,
         is_staff=False,
         **extra_fields,
     ):
-        return self._create_user(
-            username,
+        user = self._create_user(
             email,
             password,
             is_staff,
@@ -321,6 +311,11 @@ class UserProfileManager(BaseUserManager):
             False,
             **extra_fields,
         )
+
+        if not password:
+            user.set_unusable_password()
+
+        return user
 
     def create_superuser(self, username, password, email=None, **extra_fields):
         return self._create_user(
@@ -356,16 +351,15 @@ class UserProfileManager(BaseUserManager):
                 tenant.remove_user(user_obj)
 
         # Set is_active, don't actually delete the object
-        user_obj.is_active = False
+        # user_obj.is_active = False
         user_obj.save()
 
         tenant_user_deleted.send(sender=self.__class__, user=user_obj)
 
-    # This cant be located in the users app otherwise it would get loaded into
-    # both the public schema and all tenant schemas. We want profiles only
-    # in the public schema alongside the TenantBase model
 
-
+# This cant be located in the users app otherwise it would get loaded into
+# both the public schema and all tenant schemas. We want profiles only
+# in the public schema alongside the TenantBase model
 class User(AbstractBaseUser, PermissionsMixinFacade):
     '''
     An authentication-only model that is in the public tenant schema but
@@ -379,44 +373,39 @@ class User(AbstractBaseUser, PermissionsMixinFacade):
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
-        _('username'),
+        verbose_name='username',
         max_length=150,
         unique=True,
-        help_text=_(
-            'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
-        ),
+        help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.',
         validators=[username_validator],
         error_messages={
-            'unique': _('A user with that username already exists.'),
+            'unique': 'A user with that username already exists.',
         },
     )
 
-    email = models.EmailField(_('email address'), blank=True)
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
-    last_name = models.CharField(_('last name'), max_length=150, blank=True)
+    email = models.EmailField(verbose_name='email address', blank=True)
+    first_name = models.CharField(verbose_name='first name', max_length=150, blank=True)
+    last_name = models.CharField(verbose_name='last name', max_length=150, blank=True)
+
+    # Tracks whether the user's email has been verified
+    is_verified = models.BooleanField(verbose_name='verified', default=False)
+
     is_active = models.BooleanField(
-        _('active'),
+        verbose_name='active',
         default=True,
-        help_text=_(
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
-        ),
+        help_text='Designates whether this user should be treated as active. '
+        'Unselect this instead of deleting accounts.',
     )
 
     tenants = models.ManyToManyField(
         settings.TENANT_MODEL,
-        verbose_name=_('tenants'),
+        verbose_name='tenants',
         blank=True,
-        help_text=_('The tenants this user belongs to.'),
+        help_text='The tenants this user belongs to.',
         related_name='user_set',
     )
 
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-
-    is_active = models.BooleanField(_('active'), default=True)
-
-    # Tracks whether the user's email has been verified
-    is_verified = models.BooleanField(_('verified'), default=False)
+    date_joined = models.DateTimeField(verbose_name='date joined', default=timezone.now)
 
     objects = UserProfileManager()
 
@@ -426,8 +415,8 @@ class User(AbstractBaseUser, PermissionsMixinFacade):
 
     class Meta:
         app_label = 'account'
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
 
     def __str__(self):
         return self.username

@@ -7,4 +7,5 @@ class AccountConfig(AppConfig):
     label = 'account'
 
     def ready(self):
+        # Django signals enabled
         import account.user.signals

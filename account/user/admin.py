@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from account.permissions.models import TenantPermissions
+
 from .models.profile import Profile
 
 User = get_user_model()
@@ -23,16 +24,27 @@ class PermAdmin(admin.ModelAdmin):
     )
 
 
+class PermAdmin(admin.TabularInline):
+    model = TenantPermissions
+    extra = 1
+    fieldsets = (
+        (_('Permissions'), {'fields': ('is_staff', 'groups',)}),
+    )
+    filter_horizontal = (
+        'groups',
+    )
+
+
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'is_active', 'is_verified', 'is_staff', 'is_superuser']
     list_editable = ('is_active',)
     list_filter = ['is_active']
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'),
          {'fields': ('first_name', 'last_name', 'email',)}),
-        (_('Tenants & Permissions'), {'fields': ('is_active', 'tenants',)}),
+        (_('Tenants & Permissions'), {'fields': ('is_verified', 'is_active', 'tenants',)}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined',)}),
     )
     add_fieldsets = (
@@ -44,6 +56,7 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ['username', 'email', 'first_name', 'last_name']
     ordering = ['-id']
     filter_horizontal = ('tenants',)
+    inlines = [PermAdmin]
 
 
 @admin.register(Profile)
@@ -52,8 +65,9 @@ class ProfileAdmin(admin.ModelAdmin):
     fieldsets = (
         (_('Profile'), {'fields': ('user', 'image',)}),
         (_('Contact address'),
-         {'fields': ('birth_date', 'phone', 'address_1', 'address_2', 'city', 'state', 'zip_code', 'country', 'website',)}),
+         {'fields': ('gender', 'birth_date', 'phone', 'address_1', 'address_2', 'city', 'state', 'zip_code', 'country')}),
         (_('Interest'),
          {'fields': ('user_services', 'user_interest', 'is_visitor', 'is_content_creator', 'is_expert',)}),
     )
     filter_horizontal = ('user_services', 'user_interest',)
+    search_fields = ['user__username']

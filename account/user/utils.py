@@ -1,12 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django_tenants.utils import (
-    get_public_schema_name,
-    get_tenant_domain_model,
-    get_tenant_model,
-)
+from django_tenants.utils import (get_public_schema_name,
+                                  get_tenant_domain_model, get_tenant_model)
 
-from .models import ExistsError
+
+from account.user.models import ExistsError
 
 
 def get_current_tenant():
@@ -29,6 +27,7 @@ def create_public_tenant(domain_url, username, password, **owner_extra):
     profile = UserModel.objects.create(
         username=username,
         is_active=True,
+        is_verified=True,
         **owner_extra,
 
     )

@@ -1,7 +1,9 @@
 from django.db import models
 
+from db.mixins import UserTrackTimeStampMixin
 
-class Post(models.Model):
+
+class Blog(UserTrackTimeStampMixin):
     title = models.CharField(max_length=255)
     content = models.TextField()
 
