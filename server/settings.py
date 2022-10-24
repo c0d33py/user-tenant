@@ -51,9 +51,6 @@ SHARED_APPS = (
     'rest_framework',
     # Project Apps
     'membership',
-    'comment',
-    'library',
-    'blog',
 )
 
 TENANT_APPS = (
@@ -61,10 +58,7 @@ TENANT_APPS = (
     'django.contrib.auth',  # Defined in both shared apps and tenant apps
     'django.contrib.contenttypes',  # Defined in both shared apps and tenant apps
     'account.permissions',  # Defined in both shared apps and tenant apps
-    'comment',
-    'library',
     'core',
-    'blog',
 )
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
