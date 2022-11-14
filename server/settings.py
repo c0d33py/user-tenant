@@ -44,50 +44,43 @@ SHARED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Multi Tenancy Apps
-    'account.permissions',
-    'account.user',
     'django_extensions',
     'crispy_forms',
     'rest_framework',
     # Project Apps
-    'membership',
+    'tenant_users.permissions',
+    'tenant_users.tenants',
+    'companies',
+    'users'
 )
 
 TENANT_APPS = (
     # Django Apps
-    'django.contrib.auth',  # Defined in both shared apps and tenant apps
-    'django.contrib.contenttypes',  # Defined in both shared apps and tenant apps
-    'account.permissions',  # Defined in both shared apps and tenant apps
-    'core',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'tenant_users.permissions',
+    # Project Apps
+    'core.apps.CoreConfig',
 )
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
-TENANT_MODEL = 'membership.Client'
-TENANT_DOMAIN_MODEL = 'membership.Domain'
-TENANT_USERS_DOMAIN = 'example.com'
-TENANT_SUBFOLDER_PREFIX = 'r'
+# django-tenant-users settings
+TENANT_USERS_DOMAIN = 'test.com'
+AUTHENTICATION_BACKENDS = ('tenant_users.permissions.backend.UserBackend',)
+AUTH_USER_MODEL = 'users.TenantUser'
 
-ROOT_URLCONF = 'server.urls_tenants'
-PUBLIC_SCHEMA_URLCONF = 'server.urls_public'
+# django-tenants settings
+TENANT_MODEL = 'companies.Company'
+TENANT_DOMAIN_MODEL = 'companies.Domain'
 
 # FIXTURE_DIRS = BASE_DIR / 'fixtures'
 
-# Auth
 # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
-
-AUTH_USER_MODEL = 'account.user'
 PASSWORD_RESET_TIMEOUT = 86400  # 1 day
 
-AUTHENTICATION_BACKENDS = (
-    'account.permissions.backend.UserBackend',
-)
-
 MIDDLEWARE = [
-    # 'django_tenants.middleware.main.TenantMainMiddleware',
-    # 'django_tenants.middleware.TenantSubfolderMiddleware',
-    'server.middleware.TenantSubfolderMiddleware',
-    # 'server.middleware.TenantInactiveMiddleware',
+    'django_tenants.middleware.main.TenantMainMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -100,6 +93,9 @@ MIDDLEWARE = [
 
 # ROOT_URLCONF = 'server.urls'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+ROOT_URLCONF = 'server.urls'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -188,9 +184,8 @@ LOGOUT_REDIRECT_URL = '/'
 # https://github.com/django-extensions/django-extensions/blob/main/docs/shell_plus.rst#additional-imports
 
 SHELL_PLUS_IMPORTS = [
-    'from account.user.utils import create_public_tenant',
-    'from account.user.tasks import provision_tenant',
-    'from account.user.models.auth import User',
+    'from tenant_users.tenants.utils import create_public_tenant',
+    'from tenant_users.tenants.tasks import provision_tenant',
 ]
 
 
