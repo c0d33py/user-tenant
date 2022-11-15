@@ -1,10 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-# from .mixins import TimestampMixin
-
-# User = get_user_model()
-
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -12,7 +8,7 @@ class Category(models.Model):
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='%(class)s_created_by',
         null=True, blank=True)
 
